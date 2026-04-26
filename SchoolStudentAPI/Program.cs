@@ -17,7 +17,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 // --------------------
-// CORS (React Vite)
+// CORS (Updated for AWS)
 // --------------------
 builder.Services.AddCors(options =>
 {
@@ -25,7 +25,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                 "http://localhost:5173",
-                "http://localhost:5174"
+                "http://localhost:5174",
+                "http://52.64.115.50" // 🔥 your EC2 frontend
             )
             .AllowAnyHeader()
             .AllowAnyMethod();
@@ -70,7 +71,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // --------------------
-// Database Connection (IMPORTANT FIX)
+// Database Connection
 // --------------------
 builder.Services.AddScoped<IDbConnection>(sp =>
     new SqlConnection(
@@ -82,17 +83,12 @@ builder.Services.AddScoped<IDbConnection>(sp =>
 // Dependency Injection
 // --------------------
 builder.Services.AddScoped<TestDbContext>();
-
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
 builder.Services.AddScoped<ISchoolMarksheetRepo, SchoolMarksheetRepo>();
 builder.Services.AddScoped<IAuthRepo, AuthRepo>();
-
 builder.Services.AddScoped<ISchoolMarksheetService, SchoolMarksheetService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-
-// Activity Log Service
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 
 // --------------------
@@ -107,10 +103,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
             )
@@ -124,22 +118,21 @@ var app = builder.Build();
 // --------------------
 // Middleware pipeline
 // --------------------
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+// 🔥 Enable Swagger in EC2 (production also)
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseRouting();
 
 app.UseCors("AllowReactApp");
 
-app.UseHttpsRedirection();
+// ❌ Disabled for now (no HTTPS setup yet)
+// app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers()
-   .RequireCors("AllowReactApp");
+app.MapControllers();
 
 app.Run();
