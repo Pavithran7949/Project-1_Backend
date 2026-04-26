@@ -20,8 +20,8 @@ namespace SchoolStudentAPI.Controllers
             _logService = logService;
         }
 
-        [Authorize(Roles = "Admin,Staff")]
-        //[Authorize("AllowAnonymous")]
+        //[Authorize(Roles = "Admin,Staff")]
+        [AllowAnonymous]
         [HttpGet("api/GetallStudents")]
         public IActionResult GetAllStudents()
         {

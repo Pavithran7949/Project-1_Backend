@@ -111,7 +111,7 @@ WHERE Student_Id = @Student_Id";
         {
             using SqlConnection con = _dbcontext.GetConnection();
 
-            string query = "Select  from StudentMarksheet where Student_Id = @Student_Id and IsActive = 1";
+            string query = "Select * from StudentMarksheet where Student_Id = @Student_Id and IsActive = 1";
 
             return con.QueryFirstOrDefault<Students>(query, new { Student_Id = id });
         }
